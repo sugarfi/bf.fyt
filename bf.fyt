@@ -1,0 +1,77 @@
+%in "list.fyt";
+
+code = ?chars.?get.;
+size = ?(?List.len).code;
+tape = [ 0 ];
+ptr = 0;
+pos = 0;
+stack = [];
+top = 0;
+brack = [];
+brack_inv = [];
+
+stack_step = %ex{
+    [ acc ] = @;
+    s_char = ?code.acc;
+
+    ?(<%eq s_char "[">if.%ex{ stack = + stack [ top => acc ]; top = + 1 top; } { 0; }).;
+    ?(<%eq s_char "]">if.%ex{ 
+        top = - top 1; 
+        brack = + brack [ ?stack.top => + acc 1 ]; 
+        brack_inv = + brack_inv [ acc => ?stack.top ]; 
+    } { 0; }).;
+
+    ?(<%eq acc - size 1 >if.{ 0; } %ex{ ?stack_step.+ acc 1; }).;
+};
+
+step = %ex{
+    char = ?code.pos;
+    ?(?[
+        ">" => %ex{
+            ptr = + ptr 1;
+            ?(<<tape>has_key.ptr>if.
+                { 0; } 
+                %ex{ tape = + tape [ ptr => 0 ]; }
+            ).;
+            pos = + pos 1;
+        }
+        "<" => %ex{
+            ptr = - ptr 1;
+            pos = + pos 1;
+        }
+       "+" => %ex{
+            tape = + tape [ ptr => + (?tape.ptr) 1 ];
+            pos = + pos 1;
+        }
+        "-" => %ex{
+            tape = + tape [ ptr => - (?tape.ptr) 1 ];
+            pos = + pos 1;
+        }
+        "." => %ex{
+            ?put.(?chr.(?tape.ptr));
+            pos = + pos 1;
+        }
+        "," => %ex{
+            in = ?ord.?get.;
+            tape = + tape [ ptr => in ];
+            pos = + pos 1;
+        }
+        "[" => %ex{
+            ?(<%eq 0 ?tape.ptr>if.
+                %ex{ pos = ?brack.pos; }
+                %ex{ pos = + pos 1; }
+            ).;
+        }
+        "]" => %ex{
+            ?(<%ne 0 ?tape.ptr>if.
+                %ex{ pos = ?brack_inv.pos; }
+                %ex{ pos = + pos 1; }
+            ).;
+        }
+    ].char).;
+
+    ?(<%lt pos size>if.step { 0; }).;
+};
+
+?stack_step.0;
+?step.;

@@ -1,0 +1,14 @@
+List = [
+    !len_int => {
+        [ m acc ] = @;
+        ?(<<m>has_key.acc>if.{ + 1 ?(?List.len_int).m (+ acc 1); } { 0; }).;
+    }
+    !len => {
+        [ m ] = @;
+        ?(?List.len_int).m 0;
+    }
+    !append => {
+        [ l n ] = @;
+        + l [ (?(?List.len).l) => n ];
+    }
+];
